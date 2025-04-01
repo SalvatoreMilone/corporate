@@ -1,12 +1,12 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Layout from './components/layout/Layout';
-import Home from './pages/Home';
-import About from './pages/About';
-import I18nDemo from './pages/I18nDemo';
-import NotFound from './pages/NotFound';
-import ErrorBoundary from './pages/ErrorBoundary';
-import ToastProvider from './components/ui/ToastProvider';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Layout from "./components/layout/Layout";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import I18nDemo from "./pages/I18nDemo";
+import NotFound from "./pages/NotFound";
+import ErrorBoundary from "./pages/ErrorBoundary";
+import ToastProvider from "./components/ui/ToastProvider";
 
 function App() {
   return (

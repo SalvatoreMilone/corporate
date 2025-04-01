@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-html, body {
+html,
+body {
   overscroll-behavior: none;
   overflow: auto;
   height: 100%;
@@ -11,4 +12,14 @@ html, body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch; /* Per un migliore scrolling su dispositivi mobili */
   height: 100%;
+}
+
+/* Animazione ShinyText */
+@keyframes shine {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
 }

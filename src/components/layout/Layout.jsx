@@ -1,165 +1,108 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, User, ExternalLink, Globe, Menu, X } from 'lucide-react';
-import logo from '../../assets/logo.svg';
-import AnimatedLogo from '../ui/AnimatedLogo';
-import { AnimatedLogoWithText } from '../ui/AnimatedLogo';
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import Navbar from "./Navbar";
+import LeftSidebar from "./LeftSidebar";
+import RightSidebar from "./RightSidebar";
+
+// This configuration will determine which pages have left sidebar actions
+// You can expand this based on your routing needs
+const PAGES_WITH_LEFT_SIDEBAR = ["/about", "/i18n"];
 
 const Layout = ({ children }) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
-  // Check if the current link is active
-  const isActive = (path) => location.pathname === path;
+  // Sidebar states
+  const [leftSidebarUnlocked, setLeftSidebarUnlocked] = useState(false);
+  const [rightSidebarUnlocked, setRightSidebarUnlocked] = useState(false);
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
+
+  // Check if current page should have left sidebar unlocked
+  useEffect(() => {
+    const shouldUnlockLeft = PAGES_WITH_LEFT_SIDEBAR.includes(
+      location.pathname
+    );
+    setLeftSidebarUnlocked(shouldUnlockLeft);
+
+    // Auto-close sidebars when navigating if they're no longer relevant
+    if (!shouldUnlockLeft) {
+      setLeftSidebarOpen(false);
+    }
+  }, [location.pathname]);
+
+  // Function to unlock right sidebar (to be called by specific actions)
+  const unlockRightSidebar = () => {
+    setRightSidebarUnlocked(true);
+  };
+
+  // Function to lock right sidebar
+  const lockRightSidebar = () => {
+    setRightSidebarUnlocked(false);
+    setRightSidebarOpen(false);
+  };
+
+  // Toggle functions for sidebars
+  const toggleLeftSidebar = () => {
+    if (leftSidebarUnlocked) {
+      setLeftSidebarOpen(!leftSidebarOpen);
+    }
+  };
+
+  const toggleRightSidebar = () => {
+    if (rightSidebarUnlocked) {
+      setRightSidebarOpen(!rightSidebarOpen);
+    }
+  };
+
+  // CSS variables for the rounded main content
+  const mainContentStyle = {
+    marginLeft: leftSidebarOpen ? "250px" : "50px",
+    marginRight: rightSidebarOpen ? "250px" : "50px",
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Navbar */}
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white shadow-md py-2`}
-      >
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <Link
-              to="/"
-              className="flex items-center font-bold text-xl text-rose-600"
-              style={{ marginLeft: '-0.8rem' }}
-            >
-              <AnimatedLogoWithText width='2' height='2' />
+    <div className="flex flex-col h-screen bg-gray-100">
+      {/* Navbar - fixed height 50px */}
+      <Navbar
+        toggleLeftSidebar={toggleLeftSidebar}
+        toggleRightSidebar={toggleRightSidebar}
+        leftSidebarUnlocked={leftSidebarUnlocked}
+        rightSidebarUnlocked={rightSidebarUnlocked}
+        leftSidebarOpen={leftSidebarOpen}
+        rightSidebarOpen={rightSidebarOpen}
+      />
 
+      {/* Main content with sidebars */}
+      <div className="flex-1 overflow-hidden pt-[50px] relative">
+        {/* Left Sidebar - always visible with width 50px when closed, 250px when open */}
+        <LeftSidebar
+          isUnlocked={leftSidebarUnlocked}
+          isOpen={leftSidebarOpen}
+          toggle={toggleLeftSidebar}
+        />
 
-            </Link>
-
-            {/* Mobile menu button */}
-            <button
-              className="md:hidden text-gray-700"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-
-            {/* Desktop navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              <Link
-                to="/"
-                className={`flex items-center space-x-2 transition-colors ${isActive('/')
-                  ? 'text-rose-600 font-medium'
-                  : 'text-gray-700 hover:text-rose-600'
-                  }`}
-              >
-                <Home size={18} />
-                <span>Home</span>
-              </Link>
-
-              <Link
-                to="/about"
-                className={`flex items-center space-x-2 transition-colors ${isActive('/about')
-                  ? 'text-rose-600 font-medium'
-                  : 'text-gray-700 hover:text-rose-600'
-                  }`}
-              >
-                <User size={18} />
-                <span>About</span>
-              </Link>
-
-              <Link
-                to="/i18n"
-                className={`flex items-center space-x-2 transition-colors ${isActive('/i18n')
-                  ? 'text-rose-600 font-medium'
-                  : 'text-gray-700 hover:text-rose-600'
-                  }`}
-              >
-                <Globe size={18} />
-                <span>i18n Demo</span>
-              </Link>
-
-              <a
-                href="https://github.com/xjaiki/react-template"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-2 text-gray-700 hover:text-rose-600 transition-colors"
-              >
-                <ExternalLink size={18} />
-                <span>Repository</span>
-              </a>
-            </div>
+        {/* Main Content - adjusted based on sidebar states */}
+        <main
+          className="flex-1 overflow-auto transition-all duration-300 bg-gray rounded-t-2xl shadow-md"
+          style={mainContentStyle}
+        >
+          {/* Pass unlock functions to children if needed */}
+          <div className="p-6">
+            {React.cloneElement(children, {
+              unlockRightSidebar,
+              lockRightSidebar,
+            })}
           </div>
-        </div>
-      </nav>
+        </main>
 
-      {/* Mobile menu */}
-      <div
-        className={`fixed inset-0 bg-gray-800 bg-opacity-95 z-40 transition-transform duration-300 md:hidden ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
-      >
-        <div className="flex flex-col items-center justify-center h-full space-y-8 text-xl">
-          <Link
-            to="/"
-            className="text-white hover:text-rose-300 flex items-center space-x-3"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <Home size={22} />
-            <span>Home</span>
-          </Link>
-          <Link
-            to="/about"
-            className="text-white hover:text-rose-300 flex items-center space-x-3"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <User size={22} />
-            <span>About</span>
-          </Link>
-          <Link
-            to="/i18n"
-            className="text-white hover:text-rose-300 flex items-center space-x-3"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <Globe size={22} />
-            <span>i18n Demo</span>
-          </Link>
-          <a
-            href="https://github.com/yourusername/jaiki-react-template"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white hover:text-rose-300 flex items-center space-x-3"
-          >
-            <ExternalLink size={22} />
-            <span>Repository</span>
-          </a>
-        </div>
+        {/* Right Sidebar - always visible with width 50px when closed, 250px when open */}
+        <RightSidebar
+          isUnlocked={rightSidebarUnlocked}
+          isOpen={rightSidebarOpen}
+          toggle={toggleRightSidebar}
+          onClose={lockRightSidebar}
+        />
       </div>
-
-      {/* Main content */}
-      <main className="flex-grow py-24">
-        {children}
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-4 ">
-        <div className="container mx-auto px-0">
-          <div className="flex flex-col md:flex-row justify-center items-center">
-            <div className="mb-2 md:mb-0">
-              <div className="font-bold text-xl flex items-center justify-center text-rose-600">
-                <AnimatedLogoWithText width='8' height='8' className="text-rose-600" />
-              </div>
-            </div>
-            {/* <div className="flex space-x-6">
-              <a href="#" className="text-gray-300 hover:text-rose-400 transition-colors">
-                Documentation
-              </a>
-              <a href="#" className="text-gray-300 hover:text-rose-400 transition-colors">
-                Features
-              </a>
-              <a href="#" className="text-gray-300 hover:text-rose-400 transition-colors">
-                License
-              </a>
-            </div> */}
-          </div>
-          <div className="border-t border-gray-800 mt-4 pt-6 text-center text-gray-400">
-            <p>© {new Date().getFullYear()} JaikiTemplate. Open source with 💖</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
