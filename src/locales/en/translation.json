@@ -1,4 +1,22 @@
 {
+  "navbar": {
+    "home": "Home",
+    "about": "About",
+    "i18nDemo": "i18n Demo"
+  },
+  "home": {
+    "title": "Eureka, it works!",
+    "hope": "i hope",
+    "inputPlaceholder": "Type here (5 char limit)",
+    "charactersTyped": "Characters typed",
+    "currentTime": "Current time",
+    "checkpoint": "Checkpoint",
+    "unlockSidebar": "Unlock Sidebar",
+    "lockSidebar": "Lock Sidebar",
+    "snapshots": "Snapshots",
+    "snapshotTitle": "Snapshot at {{time}}",
+    "charactersCount": "Characters: {{count}}"
+  },
   "i18nDemo": {
     "title": "Internationalization Demo",
     "subtitle": "A demonstration of i18n capabilities",
@@ -17,5 +35,10 @@
     "howItWorksTitle": "How It Works",
     "howItWorksDesc": "This demo uses react-i18next for internationalization. Translation files are stored in the locales directory.",
     "usageDesc": "To use i18n in your components, import the useTranslation hook and use the t function to translate your text."
+  },
+  "notFound": {
+    "title": "404 - Page Not Found",
+    "message": "Sorry, the page you are looking for doesn't exist or has been moved.",
+    "backHome": "Back to Home"
   }
 }

@@ -1,157 +1,182 @@
-import React from "react";
-import toast from "react-hot-toast";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import AnimatedLogo from "../components/ui/AnimatedLogo";
 
 const Home = ({ unlockRightSidebar, lockRightSidebar }) => {
-  const [counter, setCounter] = useState(0);
+  const { t } = useTranslation();
+  const [inputText, setInputText] = useState("");
+  const [totalCharacters, setTotalCharacters] = useState(0);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [snapshots, setSnapshots] = useState([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  const handleClick = () => {
-    setCounter((prevCounter) => prevCounter + 1);
+  // Handle responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Initialize global snapshots
+    window.snapshots = snapshots;
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  // Handle input change with 5 character limit
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 5) {
+      setInputText(value);
+      setTotalCharacters((prev) => prev + 1);
+    } else {
+      setInputText("");
+    }
   };
 
-  if (counter === 5) {
-    // When the counter reaches 5, generate an error
-    throw new Error("I crashed when counter reached 5!");
-  }
+  // Create a snapshot
+  const createSnapshot = () => {
+    const newSnapshot = {
+      id: Date.now(),
+      time: formatTime(currentTime),
+      characters: totalCharacters,
+    };
+
+    const updatedSnapshots = [newSnapshot, ...snapshots];
+    setSnapshots(updatedSnapshots);
+
+    // Make snapshots globally available for the sidebar
+    window.snapshots = updatedSnapshots;
+
+    // If not mobile, open the right sidebar to show snapshots
+    if (!isMobile) {
+      unlockRightSidebar();
+    }
+  };
+
+  // Format time as HH:MM:SS
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  };
 
   return (
-    <div className="">
-      <div className="container mx-auto px-4 z-20">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
-            Eureka, it works!{" "}
-            <span className="text-sm font-medium text-gray-600">i hope </span>
-          </h1>
-          <AnimatedLogo width="10" height="10" />
-          <div className="p-6 bg-green-100 rounded-lg my-8">
-            <p className="text-lg text-green-700 font-medium">
-              Great! The template has been configured correctly. <br />
-              You can proceed by deleting the content of this page and start
-              building your app.
-            </p>
-          </div>
+    <div className="container mx-auto px-4 max-w-3xl">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
+          {t("home.title")}{" "}
+          <span className="text-sm font-medium text-gray-600">
+            {t("home.hope")}
+          </span>
+        </h1>
+        <AnimatedLogo width="10" height="10" />
+      </div>
 
-          <div className="bg-white rounded-lg p-6 text-left border-4 border-l-rose-600 border-t-0 border-r-0 border-b-0">
-            <h2 className="text-xl font-bold mb-4 text-rose-600">
-              Project Information
-            </h2>
-            <p className="text-gray-700 mb-4">
-              This is a minimal React + Tailwind CSS template with advanced
-              layout. It includes:
-            </p>
-            <ul className="list-disc pl-5 space-y-2 text-gray-700">
-              <li>Black navbar and conditional sidebars</li>
-              <li>React 19 with optimized Vite configuration</li>
-              <li>Tailwind CSS 4.0 preconfigured</li>
-              <li>React Router for navigation</li>
-              <li>Ready-to-use layout components</li>
-              <li>i18n support for internationalization</li>
-              <li>Lucide React icons integrated</li>
-            </ul>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-            <div className="bg-white rounded-lg p-6 text-left border-4 border-l-rose-600 border-t-0 border-r-0 border-b-0">
-              <h2 className="text-xl font-bold mb-4 text-rose-600">
-                Right Sidebar Example
-              </h2>
-              <p className="mb-4 text-gray-600">
-                Click the button below to open the right sidebar with additional
-                actions.
-              </p>
-              <button
-                onClick={unlockRightSidebar}
-                className="px-4 py-2 bg-rose-600 text-white rounded hover:bg-rose-700 transition-colors"
+      <div className="bg-white rounded-lg p-6 shadow-md mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Input field section */}
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="customInput"
+                className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Open Right Sidebar
-              </button>
-              <button
-                onClick={lockRightSidebar}
-                className="ml-2 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
-              >
-                Close Right Sidebar
-              </button>
+                {t("home.inputPlaceholder")}
+              </label>
+              <input
+                type="text"
+                id="customInput"
+                value={inputText}
+                onChange={handleInputChange}
+                placeholder={t("home.inputPlaceholder")}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500"
+              />
             </div>
 
-            <div className="bg-white rounded-lg p-6 text-left border-4 border-l-rose-600 border-t-0 border-r-0 border-b-0">
-              <h2 className="text-xl font-bold mb-4 text-rose-600">
-                Error Boundary Example
-              </h2>
-              <p className="mb-4 text-gray-600">
-                This counter will crash when it reaches 5!! now it's {counter}
-              </p>
-              <button
-                onClick={handleClick}
-                className="px-4 py-2 bg-rose-600 text-white rounded hover:bg-rose-700 transition-colors"
-              >
-                Increment
-              </button>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-500">
+                  {t("home.charactersTyped")}
+                </p>
+                <p className="text-2xl font-bold text-rose-600">
+                  {totalCharacters}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">{t("home.currentTime")}</p>
+                <p className="text-2xl font-bold text-rose-600">
+                  {formatTime(currentTime)}
+                </p>
+              </div>
             </div>
+
+            <button
+              onClick={createSnapshot}
+              className="w-full px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition-colors"
+            >
+              {t("home.checkpoint")}
+            </button>
           </div>
 
-          <div className="bg-white rounded-lg p-6 text-left border-4 border-l-rose-600 border-t-0 border-r-0 border-b-0 mt-8">
-            <h2 className="text-xl font-bold mb-4 text-rose-600">
-              Toast Notifications
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                onClick={() => toast.error("This is an error toast!")}
-                className="p-4 bg-red-500 hover:bg-red-700 text-white rounded shadow"
-              >
-                Show Error Toast
-              </button>
-              <button
-                onClick={() => toast.success("This is a success toast!")}
-                className="p-4 bg-green-500 hover:bg-green-700 text-white rounded shadow"
-              >
-                Show Success Toast
-              </button>
-              <button
-                onClick={() => {
-                  const toastId = toast.loading("Loading...");
-                  setTimeout(() => {
-                    toast.dismiss(toastId);
-                    toast.success("Loading complete!");
-                  }, 2000);
-                }}
-                className="p-4 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded shadow"
-              >
-                Show Loading Toast
-              </button>
-              <button
-                onClick={() =>
-                  toast.custom((t) => (
-                    <div
-                      className={`${
-                        t.visible ? "animate-enter" : "animate-leave"
-                      } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex p-4`}
-                    >
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900">
-                          Custom toast notification!
-                        </p>
-                        <p className="mt-1 text-sm text-gray-500">
-                          This is a custom toast with custom styling.
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => toast.dismiss(t.id)}
-                        className="ml-4 flex-shrink-0 text-gray-400 hover:text-gray-500"
-                      >
-                        Close
-                      </button>
-                    </div>
-                  ))
-                }
-                className="p-4 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded shadow"
-              >
-                Show Custom Toast
-              </button>
-            </div>
+          {/* Sidebar controls */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-rose-600 mb-4">Sidebar</h2>
+            <button
+              onClick={unlockRightSidebar}
+              className="w-full px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition-colors"
+            >
+              {t("home.unlockSidebar")}
+            </button>
+            <button
+              onClick={lockRightSidebar}
+              className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+            >
+              {t("home.lockSidebar")}
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile snapshots display */}
+      {isMobile && snapshots.length > 0 && (
+        <div className="bg-white rounded-lg p-6 shadow-md">
+          <h2 className="text-xl font-bold text-rose-600 mb-4">
+            {t("home.snapshots")}
+          </h2>
+          <div className="space-y-4">
+            {snapshots.map((snapshot) => (
+              <div
+                key={snapshot.id}
+                className="p-4 border border-gray-200 rounded-md"
+              >
+                <h3 className="font-medium text-gray-900">
+                  {t("home.snapshotTitle", { time: snapshot.time })}
+                </h3>
+                <p className="text-gray-700">
+                  {t("home.charactersCount", { count: snapshot.characters })}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
