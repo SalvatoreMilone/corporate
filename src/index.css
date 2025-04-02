@@ -34,7 +34,6 @@ body {
   -ms-overflow-style: none;
 }
 
-/* Nasconde le scrollbar per Firefox */
 * {
   scrollbar-width: none;
 }
