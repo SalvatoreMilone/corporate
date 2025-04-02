@@ -28,6 +28,15 @@ const Layout = ({ children }) => {
     if (!shouldUnlockLeft) {
       setLeftSidebarOpen(false);
     }
+
+    // Check if there are snapshots to keep the right sidebar unlocked
+    if (
+      location.pathname === "/" &&
+      window["snapshots"] &&
+      window["snapshots"].length > 0
+    ) {
+      setRightSidebarUnlocked(true);
+    }
   }, [location.pathname]);
 
   // Function to unlock right sidebar (to be called by specific actions)
@@ -37,8 +46,15 @@ const Layout = ({ children }) => {
 
   // Function to lock right sidebar
   const lockRightSidebar = () => {
-    setRightSidebarUnlocked(false);
-    setRightSidebarOpen(false);
+    // Check if there are snapshots before locking
+    if (window["snapshots"] && window["snapshots"].length > 0) {
+      // Only close the sidebar but keep it unlocked if there are snapshots
+      setRightSidebarOpen(false);
+    } else {
+      // Lock and close the sidebar if no snapshots
+      setRightSidebarUnlocked(false);
+      setRightSidebarOpen(false);
+    }
   };
 
   // Toggle functions for sidebars
@@ -53,6 +69,21 @@ const Layout = ({ children }) => {
       setRightSidebarOpen(!rightSidebarOpen);
     }
   };
+
+  // Listen for external events to control the right sidebar
+  useEffect(() => {
+    const openRightSidebar = () => {
+      if (rightSidebarUnlocked && !rightSidebarOpen) {
+        setRightSidebarOpen(true);
+      }
+    };
+
+    window.addEventListener("openRightSidebar", openRightSidebar);
+
+    return () => {
+      window.removeEventListener("openRightSidebar", openRightSidebar);
+    };
+  }, [rightSidebarUnlocked, rightSidebarOpen]);
 
   // CSS variables for the rounded main content
   const mainContentStyle = {

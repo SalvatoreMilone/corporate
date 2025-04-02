@@ -17,7 +17,7 @@ const Home = ({ unlockRightSidebar, lockRightSidebar }) => {
     };
 
     // Initialize global snapshots
-    window.snapshots = snapshots;
+    window["snapshots"] = snapshots;
 
     window.addEventListener("resize", handleResize);
     return () => {
@@ -59,7 +59,7 @@ const Home = ({ unlockRightSidebar, lockRightSidebar }) => {
     setSnapshots(updatedSnapshots);
 
     // Make snapshots globally available for the sidebar
-    window.snapshots = updatedSnapshots;
+    window["snapshots"] = updatedSnapshots;
 
     // If not mobile, open the right sidebar to show snapshots
     if (!isMobile) {
