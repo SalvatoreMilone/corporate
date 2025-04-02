@@ -56,8 +56,8 @@ const Layout = ({ children }) => {
 
   // CSS variables for the rounded main content
   const mainContentStyle = {
-    marginLeft: leftSidebarOpen ? "250px" : "50px",
-    marginRight: rightSidebarOpen ? "250px" : "50px",
+    marginLeft: leftSidebarOpen ? "249px" : "49px",
+    marginRight: rightSidebarOpen ? "249px" : "49px",
   };
 
   return (
@@ -73,7 +73,7 @@ const Layout = ({ children }) => {
       />
 
       {/* Main content with sidebars */}
-      <div className="flex-1 overflow-hidden pt-[50px] relative">
+      <div className="flex-1 overflow-x-hidden pt-[49px] relative">
         {/* Left Sidebar - always visible with width 50px when closed, 250px when open */}
         <LeftSidebar
           isUnlocked={leftSidebarUnlocked}
@@ -83,7 +83,7 @@ const Layout = ({ children }) => {
 
         {/* Main Content - adjusted based on sidebar states */}
         <main
-          className="flex-1 overflow-auto transition-all duration-300 bg-gray rounded-t-2xl shadow-md"
+          className="flex-1 overflow-auto transition-all duration-300 bg-body shadow-md"
           style={mainContentStyle}
         >
           {/* Pass unlock functions to children if needed */}
