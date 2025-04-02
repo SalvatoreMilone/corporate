@@ -9,9 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "clean:gitkeep": "find . -name \".gitkeep\" -type f -delete || true",
-    "clean:dist": "rimraf dist",
-    "prebuild": "npm run clean:dist",
-    "format": "prettier --write \"src/**/*.{js,jsx,css}\"",
+    "format": "prettier --write \"src/*/.{js,jsx,css}\"",
     "analyze": "vite-bundle-analyzer"
   },
   "dependencies": {
