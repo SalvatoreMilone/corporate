@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import AnimatedLogo from "../components/ui/AnimatedLogo";
+import useLocalStorage from "../hooks/useLocalStorage";
 
 const Home = ({ unlockRightSidebar, lockRightSidebar }) => {
   const { t } = useTranslation();
   const [inputText, setInputText] = useState("");
   const [totalCharacters, setTotalCharacters] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [snapshots, setSnapshots] = useState([]);
+  // Use localStorage hook for snapshots
+  const [snapshots, setSnapshots] = useLocalStorage("snapshots", []);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // Handle responsive behavior
@@ -23,7 +25,7 @@ const Home = ({ unlockRightSidebar, lockRightSidebar }) => {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, []);
+  }, [snapshots]);
 
   // Update time every second
   useEffect(() => {
@@ -61,10 +63,16 @@ const Home = ({ unlockRightSidebar, lockRightSidebar }) => {
     // Make snapshots globally available for the sidebar
     window["snapshots"] = updatedSnapshots;
 
-    // If not mobile, open the right sidebar to show snapshots
-    if (!isMobile) {
-      unlockRightSidebar();
-    }
+    // Unlock and trigger sidebar opening
+    unlockRightSidebar();
+
+    // Dispatch event to notify sidebar of new snapshot
+    const event = new Event("newSnapshot");
+    window.dispatchEvent(event);
+
+    // Explicitly trigger sidebar to open
+    const openEvent = new Event("openRightSidebar");
+    window.dispatchEvent(openEvent);
   };
 
   // Format time as HH:MM:SS

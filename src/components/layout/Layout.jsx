@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import LeftSidebar from "./LeftSidebar";
 import RightSidebar from "./RightSidebar";
+import useLocalStorage from "../../hooks/useLocalStorage";
 
 // This configuration will determine which pages have left sidebar actions
 // You can expand this based on your routing needs
@@ -11,11 +12,17 @@ const PAGES_WITH_LEFT_SIDEBAR = ["/about", "/i18n"];
 const Layout = ({ children }) => {
   const location = useLocation();
 
-  // Sidebar states
+  // Sidebar states with localStorage persistence
   const [leftSidebarUnlocked, setLeftSidebarUnlocked] = useState(false);
-  const [rightSidebarUnlocked, setRightSidebarUnlocked] = useState(false);
+  const [rightSidebarUnlocked, setRightSidebarUnlocked] = useLocalStorage(
+    "rightSidebarUnlocked",
+    false
+  );
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
+  const [rightSidebarOpen, setRightSidebarOpen] = useLocalStorage(
+    "rightSidebarOpen",
+    false
+  );
 
   // Check if current page should have left sidebar unlocked
   useEffect(() => {
@@ -24,19 +31,23 @@ const Layout = ({ children }) => {
     );
     setLeftSidebarUnlocked(shouldUnlockLeft);
 
-    // Auto-close sidebars when navigating if they're no longer relevant
+    // Auto-close only left sidebar when navigating if it's no longer relevant
     if (!shouldUnlockLeft) {
       setLeftSidebarOpen(false);
     }
+  }, [location.pathname]);
 
+  // Handle snapshots check in a separate effect to avoid infinite loops
+  useEffect(() => {
     // Check if there are snapshots to keep the right sidebar unlocked
-    if (
-      location.pathname === "/" &&
-      window["snapshots"] &&
-      window["snapshots"].length > 0
-    ) {
+    const hasSnapshots = window["snapshots"] && window["snapshots"].length > 0;
+
+    // Don't reset right sidebar state on page change - only update if needed
+    if (hasSnapshots && !rightSidebarUnlocked) {
       setRightSidebarUnlocked(true);
     }
+    // Only run this effect when the pathname changes, not when rightSidebarUnlocked changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   // Function to unlock right sidebar (to be called by specific actions)
@@ -83,7 +94,7 @@ const Layout = ({ children }) => {
     return () => {
       window.removeEventListener("openRightSidebar", openRightSidebar);
     };
-  }, [rightSidebarUnlocked, rightSidebarOpen]);
+  }, [rightSidebarUnlocked, rightSidebarOpen, setRightSidebarOpen]);
 
   // CSS variables for the rounded main content
   const mainContentStyle = {
@@ -114,7 +125,7 @@ const Layout = ({ children }) => {
 
         {/* Main Content - adjusted based on sidebar states */}
         <main
-          className="flex-1 overflow-auto transition-all duration-300 bg-body shadow-md"
+          className="flex-1 overflow-auto transition-all duration-300 bg-body shadow-md min-h-screen-calc"
           style={mainContentStyle}
         >
           {/* Pass unlock functions to children if needed */}

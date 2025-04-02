@@ -44,5 +44,5 @@ body {
 }
 
 .min-h-screen-calc {
-  min-height: calc(100vh - 100px); /* 4rem è l'altezza della navbar */
+  min-height: calc(100vh - 49px);
 }
