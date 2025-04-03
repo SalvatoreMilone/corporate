@@ -5,9 +5,15 @@ import LeftSidebar from "./LeftSidebar";
 import RightSidebar from "./RightSidebar";
 import useLocalStorage from "../../hooks/useLocalStorage";
 
-// This configuration will determine which pages have left sidebar actions
-// You can expand this based on your routing needs
-const PAGES_WITH_LEFT_SIDEBAR = ["/about", "/i18n"];
+// Expanded configuration for pages with left sidebar actions
+const PAGES_WITH_LEFT_SIDEBAR = [
+  "/about", 
+  "/i18n",
+  // Add more pages that should have left sidebar here
+  "/portfolio",
+  "/settings",
+  "/docs"
+];
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -29,42 +35,64 @@ const Layout = ({ children }) => {
     const shouldUnlockLeft = PAGES_WITH_LEFT_SIDEBAR.includes(
       location.pathname
     );
-    setLeftSidebarUnlocked(shouldUnlockLeft);
-
-    // Auto-close only left sidebar when navigating if it's no longer relevant
-    if (!shouldUnlockLeft) {
+    
+    // If we're unlocking, also open
+    if (shouldUnlockLeft && !leftSidebarUnlocked) {
+      setLeftSidebarUnlocked(true);
+      // Add a small delay for better transition effect
+      setTimeout(() => {
+        setLeftSidebarOpen(true);
+      }, 100);
+    } else if (!shouldUnlockLeft) {
+      // If we're locking, first close then lock
       setLeftSidebarOpen(false);
+      // Add a delay to wait for the close animation
+      setTimeout(() => {
+        setLeftSidebarUnlocked(false);
+      }, 300);
     }
-  }, [location.pathname]);
+  }, [location.pathname, leftSidebarUnlocked]);
 
-  // Handle snapshots check in a separate effect to avoid infinite loops
+  // Handle snapshots and notifications check for right sidebar
   useEffect(() => {
-    // Check if there are snapshots to keep the right sidebar unlocked
+    // Check if there are snapshots or notifications to keep the right sidebar unlocked
     const hasSnapshots = window["snapshots"] && window["snapshots"].length > 0;
+    const storedNotifications = localStorage.getItem("notifications");
+    const hasNotifications = storedNotifications && JSON.parse(storedNotifications).length > 0;
 
-    // Don't reset right sidebar state on page change - only update if needed
-    if (hasSnapshots && !rightSidebarUnlocked) {
+    // Update right sidebar state if needed
+    if ((hasSnapshots || hasNotifications) && !rightSidebarUnlocked) {
       setRightSidebarUnlocked(true);
     }
     // Only run this effect when the pathname changes, not when rightSidebarUnlocked changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
-  // Function to unlock right sidebar (to be called by specific actions)
+  // Function to unlock and open right sidebar
   const unlockRightSidebar = () => {
     setRightSidebarUnlocked(true);
+    setTimeout(() => {
+      setRightSidebarOpen(true);
+    }, 100);
   };
 
-  // Function to lock right sidebar
+  // Function to lock right sidebar after checking conditions
   const lockRightSidebar = () => {
-    // Check if there are snapshots before locking
-    if (window["snapshots"] && window["snapshots"].length > 0) {
-      // Only close the sidebar but keep it unlocked if there are snapshots
+    // Check if there are snapshots or notifications before locking
+    const hasSnapshots = window["snapshots"] && window["snapshots"].length > 0;
+    const storedNotifications = localStorage.getItem("notifications");
+    const hasNotifications = storedNotifications && JSON.parse(storedNotifications).length > 0;
+
+    if (hasSnapshots || hasNotifications) {
+      // Only close the sidebar but keep it unlocked if there are items
       setRightSidebarOpen(false);
     } else {
-      // Lock and close the sidebar if no snapshots
-      setRightSidebarUnlocked(false);
+      // First close the sidebar
       setRightSidebarOpen(false);
+      // Then lock after animation completes
+      setTimeout(() => {
+        setRightSidebarUnlocked(false);
+      }, 300);
     }
   };
 
@@ -86,6 +114,8 @@ const Layout = ({ children }) => {
     const openRightSidebar = () => {
       if (rightSidebarUnlocked && !rightSidebarOpen) {
         setRightSidebarOpen(true);
+      } else if (!rightSidebarUnlocked) {
+        unlockRightSidebar();
       }
     };
 
@@ -96,7 +126,7 @@ const Layout = ({ children }) => {
     };
   }, [rightSidebarUnlocked, rightSidebarOpen, setRightSidebarOpen]);
 
-  // CSS variables for the rounded main content
+  // CSS variables for the main content
   const mainContentStyle = {
     marginLeft: leftSidebarOpen ? "249px" : "49px",
     marginRight: rightSidebarOpen ? "249px" : "49px",
@@ -121,6 +151,7 @@ const Layout = ({ children }) => {
           isUnlocked={leftSidebarUnlocked}
           isOpen={leftSidebarOpen}
           toggle={toggleLeftSidebar}
+          currentPath={location.pathname}
         />
 
         {/* Main Content - adjusted based on sidebar states */}

@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   ChevronLeft,
   FileText,
@@ -8,106 +8,128 @@ import {
   Settings,
   Users,
   ChevronsRight,
+  Book,
+  Code,
+  Layout as LayoutIcon,
+  HelpCircle,
+  ExternalLink,
+  Hash
 } from "lucide-react";
 
-const LeftSidebar = ({ isUnlocked, isOpen, toggle }) => {
-  const location = useLocation();
+// Define content for different routes
+const ROUTE_CONTENT = {
+  "/about": {
+    title: "About Page",
+    items: [
+      { id: "creator", label: "The Creator", icon: <Users size={18} /> },
+      { id: "about", label: "About This Template", icon: <FileText size={18} /> },
+      { id: "usage", label: "How To Use", icon: <Settings size={18} /> },
+      { id: "license", label: "License", icon: <FileText size={18} /> }
+    ]
+  },
+  "/i18n": {
+    title: "I18n Options",
+    items: [
+      { id: "languages", label: "Available Languages", icon: <Layers size={18} /> },
+      { id: "translations", label: "Translation Examples", icon: <FileText size={18} /> },
+      { id: "documentation", label: "Documentation", icon: <Book size={18} />, isLink: true, to: "/i18n/documentation" }
+    ]
+  },
+  "/docs": {
+    title: "Documentation",
+    items: [
+      { id: "getting-started", label: "Getting Started", icon: <FileText size={18} /> },
+      { id: "components", label: "Components", icon: <Code size={18} /> },
+      { id: "layouts", label: "Layouts", icon: <LayoutIcon size={18} /> },
+      { id: "examples", label: "Examples", icon: <ExternalLink size={18} /> }
+    ]
+  },
+  "/settings": {
+    title: "Settings",
+    items: [
+      { id: "profile", label: "Profile", icon: <Users size={18} /> },
+      { id: "appearance", label: "Appearance", icon: <Layers size={18} /> },
+      { id: "preferences", label: "Preferences", icon: <Settings size={18} /> },
+      { id: "help", label: "Help", icon: <HelpCircle size={18} /> }
+    ]
+  },
+  // Add more routes as needed
+};
 
-  // Define sidebar content based on the current route
+const LeftSidebar = ({ isUnlocked, isOpen, toggle, currentPath }) => {
+  const { t } = useTranslation();
+  
+  // Function to get route content or default content
+  const getRouteContent = () => {
+    return ROUTE_CONTENT[currentPath] || {
+      title: "Navigation",
+      items: []
+    };
+  };
+
+  const routeContent = getRouteContent();
+  
+  // Get sidebar content based on the current route
   const getSidebarContent = () => {
-    switch (location.pathname) {
-      case "/about":
-        return (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold px-4 text-gray-300">
-              About Page
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="#creator"
-                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-md"
-                >
-                  <Users size={18} className="mr-3" />
-                  <span>The Creator</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#about"
-                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-md"
-                >
-                  <FileText size={18} className="mr-3" />
-                  <span>About This Template</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#usage"
-                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-md"
-                >
-                  <Settings size={18} className="mr-3" />
-                  <span>How To Use</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#license"
-                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-md"
-                >
-                  <FileText size={18} className="mr-3" />
-                  <span>License</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        );
-
-      case "/i18n":
-        return (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold px-4 text-gray-300">
-              I18n Options
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="#languages"
-                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-md"
-                >
-                  <Layers size={18} className="mr-3" />
-                  <span>Available Languages</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#translations"
-                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-md"
-                >
-                  <FileText size={18} className="mr-3" />
-                  <span>Translation Examples</span>
-                </a>
-              </li>
-              <li>
+    return (
+      <div className="space-y-6">
+        <h3 className="text-lg font-semibold px-4 text-gray-300">
+          {routeContent.title}
+        </h3>
+        <ul className="space-y-2">
+          {routeContent.items.map((item) => (
+            <li key={item.id}>
+              {item.isLink ? (
                 <Link
-                  to="/i18n/documentation"
+                  to={item.to}
                   className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-md"
                 >
-                  <FileText size={18} className="mr-3" />
-                  <span>Documentation</span>
+                  {item.icon && <span className="mr-3">{item.icon}</span>}
+                  <span>{item.label}</span>
                 </Link>
-              </li>
-            </ul>
-          </div>
-        );
+              ) : (
+                <a
+                  href={`#${item.id}`}
+                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-md"
+                >
+                  {item.icon && <span className="mr-3">{item.icon}</span>}
+                  <span>{item.label}</span>
+                </a>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
 
-      default:
-        return (
-          <div className="px-4 py-6 text-gray-400 text-center">
-            <p>No actions available for this page</p>
+  // Render contextual icons for collapsed sidebar
+  const renderCollapsedIcons = () => {
+    if (!isUnlocked || !routeContent.items.length) return null;
+    
+    return (
+      <div className="mt-6 space-y-6">
+        {routeContent.items.slice(0, 4).map((item, index) => (
+          <div 
+            key={item.id} 
+            className="flex justify-center cursor-pointer hover:text-rose-400 transition-colors"
+            onClick={() => {
+              // First expand the sidebar
+              if (!isOpen) toggle();
+              // Then wait for animation and scroll to target
+              setTimeout(() => {
+                const target = document.getElementById(item.id) || 
+                              document.querySelector(`a[href="#${item.id}"]`);
+                if (target) target.click();
+              }, 300);
+            }}
+          >
+            {item.icon ? React.cloneElement(item.icon, { size: 20, className: "text-gray-300" }) : 
+                         <Hash size={20} className="text-gray-300" />}
           </div>
-        );
-    }
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -136,25 +158,8 @@ const LeftSidebar = ({ isUnlocked, isOpen, toggle }) => {
             <ChevronsRight size={20} />
           </button>
 
-          {/* Vertical icons for navigation */}
-          {isUnlocked && (
-            <div className="mt-6 space-y-6">
-              {location.pathname === "/about" && (
-                <>
-                  <Users size={20} className="text-gray-300" />
-                  <FileText size={20} className="text-gray-300" />
-                  <Settings size={20} className="text-gray-300" />
-                </>
-              )}
-
-              {location.pathname === "/i18n" && (
-                <>
-                  <Layers size={20} className="text-gray-300" />
-                  <FileText size={20} className="text-gray-300" />
-                </>
-              )}
-            </div>
-          )}
+          {/* Contextual icons for navigation */}
+          {renderCollapsedIcons()}
         </div>
       )}
 

@@ -4,33 +4,45 @@ import {
   ChevronRight,
   X,
   ChevronsLeft,
-  Settings,
   Bell,
-  HelpCircle,
   Clock,
   Download,
+  Trash2,
+  FileDown,
+  Info,
+  AlertCircle
 } from "lucide-react";
 
 // Define a type for the snapshot
-type Snapshot = {
+interface Snapshot {
   id: number;
   time: string;
   characters: number;
-};
+}
 
 // Define a type for notifications
-type Notification = {
+interface Notification {
   id: number;
   time: string;
-  type: "download" | "update" | "info";
+  type: "download" | "update" | "info" | "warning" | "error";
   message: string;
-};
+}
 
 const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
   const { t } = useTranslation();
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [shouldForceOpen, setShouldForceOpen] = useState(false);
+
+  // Group notifications by type
+  const groupedNotifications = notifications.reduce((acc, notification) => {
+    const { type } = notification;
+    if (!acc[type]) {
+      acc[type] = [];
+    }
+    acc[type].push(notification);
+    return acc;
+  }, {} as Record<string, Notification[]>);
 
   // Load snapshots and notifications from localStorage on mount
   useEffect(() => {
@@ -50,13 +62,10 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
   useEffect(() => {
     // Function to update snapshots from window.snapshots
     const checkForSnapshots = () => {
-      // Use bracket notation to avoid TypeScript errors
       if (window["snapshots"]) {
         const currentSnapshots = window["snapshots"] as Snapshot[];
-        // Only update state if snapshots have changed
         if (JSON.stringify(currentSnapshots) !== JSON.stringify(snapshots)) {
           setSnapshots(currentSnapshots);
-          // Save to localStorage, but only if different
           localStorage.setItem("snapshots", JSON.stringify(currentSnapshots));
         }
       }
@@ -64,27 +73,22 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
 
     // Function to handle new snapshot event
     const handleNewSnapshot = () => {
-      // Force open sidebar
       setShouldForceOpen(true);
-      // Force update of snapshots
       checkForSnapshots();
     };
 
     // Function to handle new notification event
-    const handleNewNotification = (event) => {
+    const handleNewNotification = (event: CustomEvent) => {
       if (event.detail) {
         const newNotification = event.detail as Notification;
         setNotifications((prev) => {
-          // Only update if this notification isn't already in the list
           if (!prev.some((n) => n.id === newNotification.id)) {
             const updated = [newNotification, ...prev];
-            // Save to localStorage
             localStorage.setItem("notifications", JSON.stringify(updated));
             return updated;
           }
           return prev;
         });
-        // Force open sidebar
         setShouldForceOpen(true);
       }
     };
@@ -99,16 +103,16 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
 
     // Set up event listeners
     window.addEventListener("newSnapshot", handleNewSnapshot);
-    window.addEventListener("newNotification", handleNewNotification);
+    window.addEventListener("newNotification", handleNewNotification as EventListener);
     window.addEventListener("openRightSidebar", handleOpenSidebar);
 
-    // Check for new snapshots periodically (fallback method) - reduced frequency
+    // Check for new snapshots periodically - reduced frequency
     const intervalId = setInterval(checkForSnapshots, 2000);
 
     // Clean up event listeners and interval
     return () => {
       window.removeEventListener("newSnapshot", handleNewSnapshot);
-      window.removeEventListener("newNotification", handleNewNotification);
+      window.removeEventListener("newNotification", handleNewNotification as EventListener);
       window.removeEventListener("openRightSidebar", handleOpenSidebar);
       clearInterval(intervalId);
     };
@@ -122,7 +126,7 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
     }
   }, [isOpen]);
 
-  // Force open the sidebar when shouldForceOpen is true - with safeguard
+  // Force open the sidebar when shouldForceOpen is true
   useEffect(() => {
     if (
       shouldForceOpen &&
@@ -130,15 +134,100 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
       isUnlocked &&
       typeof toggle === "function"
     ) {
-      // Reset the flag first to prevent repeated toggles
       setShouldForceOpen(false);
-      // Use setTimeout to break potential update cycles
       setTimeout(() => {
         toggle();
       }, 0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldForceOpen, isOpen, isUnlocked]);
+
+  // Delete a single notification
+  const deleteNotification = (id: number) => {
+    setNotifications((prev) => {
+      const updated = prev.filter((n) => n.id !== id);
+      localStorage.setItem("notifications", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Clear all notifications of a specific type
+  const clearNotificationsByType = (type: string) => {
+    setNotifications((prev) => {
+      const updated = prev.filter((n) => n.type !== type);
+      localStorage.setItem("notifications", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Clear all snapshots
+  const clearAllSnapshots = () => {
+    setSnapshots([]);
+    window["snapshots"] = [];
+    localStorage.removeItem("snapshots");
+  };
+
+  // Get icon for notification type
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "download":
+        return <Download size={16} className="text-blue-400" />;
+      case "update":
+        return <FileDown size={16} className="text-green-400" />;
+      case "warning":
+        return <AlertCircle size={16} className="text-amber-400" />;
+      case "error":
+        return <AlertCircle size={16} className="text-red-400" />;
+      case "info":
+      default:
+        return <Info size={16} className="text-gray-400" />;
+    }
+  };
+
+  // Get notification type label
+  const getNotificationTypeLabel = (type: string) => {
+    switch (type) {
+      case "download":
+        return "Downloads";
+      case "update":
+        return "Updates";
+      case "warning":
+        return "Warnings";
+      case "error":
+        return "Errors";
+      case "info":
+      default:
+        return "Information";
+    }
+  };
+
+  // Determine which icons to show when sidebar is collapsed
+  const renderCollapsedIcons = () => {
+    const hasDownloads = notifications.some(n => n.type === "download");
+    const hasUpdates = notifications.some(n => n.type === "update");
+    const hasWarnings = notifications.some(n => n.type === "warning" || n.type === "error");
+    const hasSnapshots = snapshots.length > 0;
+    
+    return (
+      <div className="mt-6 space-y-6">
+        {hasSnapshots && (
+          <Clock size={20} className="text-rose-400" />
+        )}
+        {hasDownloads && (
+          <Download size={20} className="text-blue-400" />
+        )}
+        {hasUpdates && (
+          <FileDown size={20} className="text-green-400" />
+        )}
+        {hasWarnings && (
+          <AlertCircle size={20} className="text-amber-400" />
+        )}
+        {!hasSnapshots && !hasDownloads && !hasUpdates && !hasWarnings && (
+          <Bell size={20} className="text-gray-300" />
+        )}
+      </div>
+    );
+  };
 
   return (
     <aside
@@ -166,14 +255,8 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
             <ChevronsLeft size={20} />
           </button>
 
-          {/* Vertical icons for actions */}
-          {isUnlocked && (
-            <div className="mt-6 space-y-6">
-              <Settings size={20} className="text-gray-300" />
-              <Bell size={20} className="text-gray-300" />
-              <HelpCircle size={20} className="text-gray-300" />
-            </div>
-          )}
+          {/* Vertical icons for notifications */}
+          {isUnlocked && renderCollapsedIcons()}
         </div>
       )}
 
@@ -181,7 +264,7 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
       {isOpen && (
         <div className="h-full">
           <div className="flex justify-between items-center p-4 border-b border-gray-800">
-            <h3 className="text-lg font-medium">Actions Panel</h3>
+            <h3 className="text-lg font-medium">Notifications</h3>
             <div className="flex space-x-2">
               <button
                 onClick={toggle}
@@ -204,38 +287,65 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
             className="p-4 overflow-y-auto"
             style={{ height: "calc(100% - 60px)" }}
           >
-            {/* Notifications */}
-            {notifications && notifications.length > 0 && (
-              <div className="space-y-4 mb-6">
-                <h3 className="text-xl font-semibold text-rose-400 mb-4">
-                  Notifications
-                </h3>
-
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className="p-3 bg-gray-800 rounded-md"
-                  >
-                    <div className="flex items-center mb-2">
-                      {notification.type === "download" ? (
-                        <Download size={16} className="mr-2 text-rose-400" />
-                      ) : (
-                        <Bell size={16} className="mr-2 text-rose-400" />
-                      )}
-                      <h4 className="font-medium">{notification.message}</h4>
+            {/* Notifications by type */}
+            {Object.keys(groupedNotifications).length > 0 && (
+              <div className="space-y-6 mb-6">
+                {Object.entries(groupedNotifications).map(([type, typeNotifications]) => (
+                  <div key={type} className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold text-rose-400">
+                        {getNotificationTypeLabel(type)}
+                      </h3>
+                      <button
+                        onClick={() => clearNotificationsByType(type)}
+                        className="p-1 rounded-md hover:bg-gray-800 transition-colors text-gray-400 hover:text-rose-400"
+                        title="Clear All"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                    <p className="text-sm text-gray-400">{notification.time}</p>
+
+                    {typeNotifications.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className="p-3 bg-gray-800 rounded-md"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center">
+                            {getNotificationIcon(notification.type)}
+                            <h4 className="font-medium ml-2">{notification.message}</h4>
+                          </div>
+                          <button
+                            onClick={() => deleteNotification(notification.id)}
+                            className="p-1 rounded-md hover:bg-gray-700 transition-colors text-gray-400 hover:text-rose-400"
+                            title="Delete"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                        <p className="text-sm text-gray-400">{notification.time}</p>
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>
             )}
 
             {/* Snapshots */}
-            {snapshots && snapshots.length > 0 ? (
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-rose-400 mb-4">
-                  {t("home.snapshots")}
-                </h3>
+            {snapshots && snapshots.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-rose-400">
+                    {t("home.snapshots")}
+                  </h3>
+                  <button
+                    onClick={clearAllSnapshots}
+                    className="p-1 rounded-md hover:bg-gray-800 transition-colors text-gray-400 hover:text-rose-400"
+                    title="Clear All Snapshots"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
 
                 {snapshots.map((snapshot) => (
                   <div key={snapshot.id} className="p-3 bg-gray-800 rounded-md">
@@ -253,16 +363,20 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
                   </div>
                 ))}
               </div>
-            ) : notifications.length === 0 ? (
+            )}
+
+            {/* Empty state */}
+            {Object.keys(groupedNotifications).length === 0 && snapshots.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <div className="p-6">
-                  <p className="text-gray-400 mb-4">No activity yet.</p>
+                  <Bell size={40} className="mx-auto mb-4 text-gray-600" />
+                  <p className="text-gray-400 mb-4">No notifications yet.</p>
                   <p className="text-gray-500 text-sm">
                     Snapshots and notifications will appear here.
                   </p>
                 </div>
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       )}
