@@ -63,10 +63,44 @@ const Layout = ({ children }) => {
     // Update right sidebar state if needed
     if ((hasSnapshots || hasNotifications) && !rightSidebarUnlocked) {
       setRightSidebarUnlocked(true);
+    } else if (!hasSnapshots && !hasNotifications && rightSidebarUnlocked) {
+      // If no notifications and no snapshots, lock the sidebar
+      setRightSidebarOpen(false);
+      setTimeout(() => {
+        setRightSidebarUnlocked(false);
+      }, 300);
     }
     // Only run this effect when the pathname changes, not when rightSidebarUnlocked changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
+  
+  // Add listener for storage events to detect changes to notifications/snapshots
+  useEffect(() => {
+    const checkNotificationsAndSnapshots = () => {
+      const hasSnapshots = window["snapshots"] && window["snapshots"].length > 0;
+      const storedNotifications = localStorage.getItem("notifications");
+      const hasNotifications = storedNotifications && JSON.parse(storedNotifications).length > 0;
+      
+      if (!hasSnapshots && !hasNotifications && rightSidebarUnlocked) {
+        // If no notifications and no snapshots, lock the sidebar
+        setRightSidebarOpen(false);
+        setTimeout(() => {
+          setRightSidebarUnlocked(false);
+        }, 300);
+      }
+    };
+    
+    // Check every 2 seconds for notification changes
+    const intervalId = setInterval(checkNotificationsAndSnapshots, 2000);
+    
+    // Also listen for the window storage event
+    window.addEventListener('storage', checkNotificationsAndSnapshots);
+    
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('storage', checkNotificationsAndSnapshots);
+    };
+  }, [rightSidebarUnlocked, setRightSidebarUnlocked, setRightSidebarOpen]);
 
   // Function to unlock and open right sidebar
   const unlockRightSidebar = () => {
@@ -83,12 +117,11 @@ const Layout = ({ children }) => {
     const storedNotifications = localStorage.getItem("notifications");
     const hasNotifications = storedNotifications && JSON.parse(storedNotifications).length > 0;
 
-    if (hasSnapshots || hasNotifications) {
-      // Only close the sidebar but keep it unlocked if there are items
-      setRightSidebarOpen(false);
-    } else {
-      // First close the sidebar
-      setRightSidebarOpen(false);
+    // First close the sidebar
+    setRightSidebarOpen(false);
+    
+    // If there are no notifications or snapshots, lock it
+    if (!hasSnapshots && !hasNotifications) {
       // Then lock after animation completes
       setTimeout(() => {
         setRightSidebarUnlocked(false);
@@ -96,16 +129,37 @@ const Layout = ({ children }) => {
     }
   };
 
-  // Toggle functions for sidebars
+  // Toggle functions for sidebars with debounce to prevent multiple rapid clicks
+  const [isLeftToggling, setIsLeftToggling] = useState(false);
+  const [isRightToggling, setIsRightToggling] = useState(false);
+  
   const toggleLeftSidebar = () => {
-    if (leftSidebarUnlocked) {
+    if (leftSidebarUnlocked && !isLeftToggling) {
+      // Set toggling state to prevent multiple rapid clicks
+      setIsLeftToggling(true);
+      
+      // Toggle the sidebar state
       setLeftSidebarOpen(!leftSidebarOpen);
+      
+      // Reset toggling state after animation completes
+      setTimeout(() => {
+        setIsLeftToggling(false);
+      }, 300);
     }
   };
 
   const toggleRightSidebar = () => {
-    if (rightSidebarUnlocked) {
+    if (rightSidebarUnlocked && !isRightToggling) {
+      // Set toggling state to prevent multiple rapid clicks
+      setIsRightToggling(true);
+      
+      // Toggle the sidebar state
       setRightSidebarOpen(!rightSidebarOpen);
+      
+      // Reset toggling state after animation completes
+      setTimeout(() => {
+        setIsRightToggling(false);
+      }, 300);
     }
   };
 

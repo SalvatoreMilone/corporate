@@ -156,6 +156,12 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
     setNotifications((prev) => {
       const updated = prev.filter((n) => n.type !== type);
       localStorage.setItem("notifications", JSON.stringify(updated));
+      
+      // Check if all notifications are now cleared
+      if (updated.length === 0 && snapshots.length === 0) {
+        setTimeout(() => onClose(), 300);
+      }
+      
       return updated;
     });
   };
@@ -165,6 +171,22 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
     setSnapshots([]);
     window["snapshots"] = [];
     localStorage.removeItem("snapshots");
+    
+    // Check if we should lock the sidebar
+    if (notifications.length === 0) {
+      setTimeout(() => onClose(), 300);
+    }
+  };
+  
+  // Clear all notifications
+  const clearAllNotifications = () => {
+    setNotifications([]);
+    localStorage.removeItem("notifications");
+    
+    // Check if we should lock the sidebar
+    if (snapshots.length === 0) {
+      setTimeout(() => onClose(), 300);
+    }
   };
 
   // Get icon for notification type
@@ -203,6 +225,15 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
 
   // Determine which icons to show when sidebar is collapsed
   const renderCollapsedIcons = () => {
+    // Don't show any notification icons if there are no notifications
+    if (notifications.length === 0 && snapshots.length === 0) {
+      return (
+        <div className="mt-6 space-y-6">
+          <Bell size={20} className="text-gray-300" />
+        </div>
+      );
+    }
+    
     const hasDownloads = notifications.some(n => n.type === "download");
     const hasUpdates = notifications.some(n => n.type === "update");
     const hasWarnings = notifications.some(n => n.type === "warning" || n.type === "error");
@@ -266,6 +297,18 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
           <div className="flex justify-between items-center p-4 border-b border-gray-800">
             <h3 className="text-lg font-medium">Notifications</h3>
             <div className="flex space-x-2">
+              {(notifications.length > 0 || snapshots.length > 0) && (
+                <button
+                  onClick={() => {
+                    clearAllNotifications();
+                    clearAllSnapshots();
+                  }}
+                  className="p-1 rounded-md hover:bg-gray-800 transition-colors text-gray-400 hover:text-rose-400"
+                  title="Clear All"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
               <button
                 onClick={toggle}
                 className="p-1 rounded-md hover:bg-gray-800 transition-colors"

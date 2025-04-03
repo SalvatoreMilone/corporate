@@ -7,8 +7,12 @@ import I18nDemo from "./pages/I18nDemo";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./pages/ErrorBoundary";
 import ToastProvider from "./components/ui/ToastProvider";
+import useReloadTranslations from "./hooks/useReloadTranslations";
 
 function App() {
+  // Use our custom hook to ensure translations load properly
+  useReloadTranslations();
+  
   return (
     <Router>
       <ToastProvider />

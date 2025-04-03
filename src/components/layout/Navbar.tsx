@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Globe,
+  Bell,
   ChevronDown
 } from "lucide-react";
 import { AnimatedLogoWithText } from "../ui/AnimatedLogo";
@@ -36,8 +37,22 @@ const Navbar = ({
 
   // Change the language
   const changeLanguage = (langCode) => {
-    i18n.changeLanguage(langCode);
-    setLangMenuOpen(false);
+    i18n.changeLanguage(langCode)
+      .then(() => {
+        // Force reload resources after language change
+        i18n.reloadResources()
+          .then(() => {
+            // Update localStorage to persist the language choice
+            localStorage.setItem('i18nextLng', langCode);
+            
+            // Close the language menu
+            setLangMenuOpen(false);
+            
+            console.log(`Language changed to: ${langCode}`);
+          })
+          .catch(err => console.error('Failed to reload resources:', err));
+      })
+      .catch(err => console.error('Failed to change language:', err));
   };
 
   // Find the current language
@@ -48,18 +63,15 @@ const Navbar = ({
       <div className="container mx-auto flex items-center justify-between">
         {/* Left Side: Sidebar Toggle & Logo */}
         <div className="flex items-center">
-          {/* Left Sidebar Toggle */}
-          <button
-            onClick={toggleLeftSidebar}
-            className={`p-1 rounded-md mr-2 transition-colors ${
-              !leftSidebarUnlocked
-                ? "opacity-20 cursor-not-allowed"
-                : "hover:bg-gray-800"
-            }`}
-            disabled={!leftSidebarUnlocked}
-          >
-            {leftSidebarOpen ? <ChevronLeft size={18} /> : <Menu size={18} />}
-          </button>
+          {/* Left Sidebar Toggle - Only show if it's unlocked */}
+          {leftSidebarUnlocked && (
+            <button
+              onClick={toggleLeftSidebar}
+              className="p-1 rounded-md mr-2 hover:bg-gray-800 transition-colors"
+            >
+              {leftSidebarOpen ? <ChevronLeft size={18} /> : <Menu size={18} />}
+            </button>
+          )}
 
           {/* Logo and Brand */}
           <Link to="/" className="flex items-center font-bold text-xl">
@@ -128,10 +140,10 @@ const Navbar = ({
             )}
           </div>
 
-          {/* Right Sidebar Toggle */}
+          {/* Notification bell instead of hamburger menu */}
           <button
             onClick={toggleRightSidebar}
-            className={`p-2 rounded-md transition-colors ${
+            className={`p-2 rounded-md transition-colors relative ${
               !rightSidebarUnlocked
                 ? "opacity-20 cursor-not-allowed"
                 : "hover:bg-gray-800"
@@ -139,7 +151,7 @@ const Navbar = ({
             disabled={!rightSidebarUnlocked}
             title={rightSidebarUnlocked ? "Toggle Notifications" : "No Notifications"}
           >
-            {rightSidebarOpen ? <ChevronRight size={18} /> : <Menu size={18} />}
+            <Bell size={18} />
             
             {/* Notification indicator if there are notifications */}
             {rightSidebarUnlocked && !rightSidebarOpen && (
