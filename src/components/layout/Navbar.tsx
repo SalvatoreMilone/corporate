@@ -9,7 +9,8 @@ import {
   ChevronRight,
   Bell,
   Globe,
-  ChevronDown
+  ChevronDown,
+  Clock
 } from "lucide-react";
 import { AnimatedLogoWithText } from "../ui/AnimatedLogo";
 
@@ -101,6 +102,30 @@ const Navbar = ({
             <User size={16} />
             <span>{t("navbar.about")}</span>
           </Link>
+          
+          <Link
+            to="/work-timer"
+            className={`flex items-center space-x-2 transition-colors ${
+              isActive("/work-timer")
+                ? "text-rose-400 font-medium"
+                : "text-gray-300 hover:text-white"
+            }`}
+          >
+            <Clock size={16} />
+            <span>{t("navbar.workTimer")}</span>
+          </Link>
+
+          <Link
+            to="/i18n"
+            className={`flex items-center space-x-2 transition-colors ${
+              isActive("/i18n")
+                ? "text-rose-400 font-medium"
+                : "text-gray-300 hover:text-white"
+            }`}
+          >
+            <Globe size={16} />
+            <span>{t("navbar.i18nDemo")}</span>
+          </Link>
         </div>
 
         {/* Right Side: Language Selector & Notification Toggle */}
@@ -146,7 +171,7 @@ const Navbar = ({
                 : "hover:bg-gray-800"
             }`}
             disabled={!rightSidebarUnlocked}
-            title={rightSidebarUnlocked ? "Toggle Notifications" : "No Notifications"}
+            title={rightSidebarUnlocked ? t("notifications.toggle", "Toggle Notifications") : t("notifications.none", "No Notifications")}
           >
             <Bell size={18} />
             

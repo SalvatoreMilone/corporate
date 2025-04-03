@@ -36,6 +36,18 @@ export const createUpdateNotification = (message = "Update available") => {
   return saveAndDispatchNotification(notification);
 };
 
+// Create a timer notification
+export const createTimerNotification = (message = "Timer completed") => {
+  const notification = {
+    id: Date.now(),
+    time: getFormattedTime(),
+    type: "timer", 
+    message,
+  };
+
+  return saveAndDispatchNotification(notification);
+};
+
 // Create an info notification
 export const createInfoNotification = (message) => {
   const notification = {
@@ -80,7 +92,7 @@ export const createNotification = (message, type = "info") => {
   }
 
   // Validate the type
-  const validTypes = ["download", "update", "info", "warning", "error"];
+  const validTypes = ["download", "update", "info", "warning", "error", "timer"];
   if (!validTypes.includes(type)) {
     console.warn(`Invalid notification type: ${type}. Using "info" instead.`);
     type = "info";

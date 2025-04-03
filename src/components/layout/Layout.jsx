@@ -9,7 +9,9 @@ import useLocalStorage from "../../hooks/useLocalStorage";
 const PAGES_WITH_LEFT_SIDEBAR = [
   "/about", 
   "/i18n",
-  // Add more pages that should have left sidebar here
+  // Add the work timer page
+  "/work-timer",
+  // Other pages
   "/portfolio",
   "/settings",
   "/docs"

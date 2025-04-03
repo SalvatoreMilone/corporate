@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import {
@@ -13,56 +13,64 @@ import {
   Layout as LayoutIcon,
   HelpCircle,
   ExternalLink,
-  Hash
+  Hash,
+  Clock
 } from "lucide-react";
 
-// Define content for different routes
-const ROUTE_CONTENT = {
-  "/about": {
-    title: "About Page",
-    items: [
-      { id: "creator", label: "The Creator", icon: <Users size={18} /> },
-      { id: "about", label: "About This Template", icon: <FileText size={18} /> },
-      { id: "usage", label: "How To Use", icon: <Settings size={18} /> },
-      { id: "license", label: "License", icon: <FileText size={18} /> }
-    ]
-  },
-  "/i18n": {
-    title: "I18n Options",
-    items: [
-      { id: "languages", label: "Available Languages", icon: <Layers size={18} /> },
-      { id: "translations", label: "Translation Examples", icon: <FileText size={18} /> },
-      { id: "documentation", label: "Documentation", icon: <Book size={18} />, isLink: true, to: "/i18n/documentation" }
-    ]
-  },
-  "/docs": {
-    title: "Documentation",
-    items: [
-      { id: "getting-started", label: "Getting Started", icon: <FileText size={18} /> },
-      { id: "components", label: "Components", icon: <Code size={18} /> },
-      { id: "layouts", label: "Layouts", icon: <LayoutIcon size={18} /> },
-      { id: "examples", label: "Examples", icon: <ExternalLink size={18} /> }
-    ]
-  },
-  "/settings": {
-    title: "Settings",
-    items: [
-      { id: "profile", label: "Profile", icon: <Users size={18} /> },
-      { id: "appearance", label: "Appearance", icon: <Layers size={18} /> },
-      { id: "preferences", label: "Preferences", icon: <Settings size={18} /> },
-      { id: "help", label: "Help", icon: <HelpCircle size={18} /> }
-    ]
-  },
-  // Add more routes as needed
-};
-
 const LeftSidebar = ({ isUnlocked, isOpen, toggle, currentPath }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  
+  // Define content for different routes - now with translations
+  const ROUTE_CONTENT = useMemo(() => ({
+    "/about": {
+      title: t("sidebar.aboutTitle", "About Page"),
+      items: [
+        { id: "creator", label: t("sidebar.creator", "The Creator"), icon: <Users size={18} /> },
+        { id: "about", label: t("sidebar.aboutTemplate", "About This Template"), icon: <FileText size={18} /> },
+        { id: "usage", label: t("sidebar.howToUse", "How To Use"), icon: <Settings size={18} /> },
+        { id: "license", label: t("sidebar.license", "License"), icon: <FileText size={18} /> }
+      ]
+    },
+    "/i18n": {
+      title: t("sidebar.i18nTitle", "I18n Options"),
+      items: [
+        { id: "languages", label: t("sidebar.languages", "Available Languages"), icon: <Layers size={18} /> },
+        { id: "translations", label: t("sidebar.translations", "Translation Examples"), icon: <FileText size={18} /> },
+        { id: "documentation", label: t("sidebar.documentation", "Documentation"), icon: <Book size={18} />, isLink: true, to: "/i18n/documentation" }
+      ]
+    },
+    "/work-timer": {
+      title: t("sidebar.workTimerTitle", "Work Timer Options"),
+      items: [
+        { id: "settings", label: t("sidebar.timerSettings", "Timer Settings"), icon: <Settings size={18} /> },
+        { id: "history", label: t("sidebar.timerHistory", "Timer History"), icon: <Clock size={18} /> }
+      ]
+    },
+    // Keep other routes
+    "/docs": {
+      title: t("sidebar.docsTitle", "Documentation"),
+      items: [
+        { id: "getting-started", label: t("sidebar.gettingStarted", "Getting Started"), icon: <FileText size={18} /> },
+        { id: "components", label: t("sidebar.components", "Components"), icon: <Code size={18} /> },
+        { id: "layouts", label: t("sidebar.layouts", "Layouts"), icon: <LayoutIcon size={18} /> },
+        { id: "examples", label: t("sidebar.examples", "Examples"), icon: <ExternalLink size={18} /> }
+      ]
+    },
+    "/settings": {
+      title: t("sidebar.settingsTitle", "Settings"),
+      items: [
+        { id: "profile", label: t("sidebar.profile", "Profile"), icon: <Users size={18} /> },
+        { id: "appearance", label: t("sidebar.appearance", "Appearance"), icon: <Layers size={18} /> },
+        { id: "preferences", label: t("sidebar.preferences", "Preferences"), icon: <Settings size={18} /> },
+        { id: "help", label: t("sidebar.help", "Help"), icon: <HelpCircle size={18} /> }
+      ]
+    }
+  }), [t]); // Re-compute when language changes
   
   // Function to get route content or default content
   const getRouteContent = () => {
     return ROUTE_CONTENT[currentPath] || {
-      title: "Navigation",
+      title: t("sidebar.navigation", "Navigation"),
       items: []
     };
   };
@@ -153,7 +161,7 @@ const LeftSidebar = ({ isUnlocked, isOpen, toggle, currentPath }) => {
                 : "hover:bg-gray-800"
             }`}
             disabled={!isUnlocked}
-            title={isUnlocked ? "Expand Sidebar" : "Sidebar Locked"}
+            title={isUnlocked ? t("sidebar.expandSidebar", "Expand Sidebar") : t("sidebar.sidebarLocked", "Sidebar Locked")}
           >
             <ChevronsRight size={20} />
           </button>
@@ -170,7 +178,7 @@ const LeftSidebar = ({ isUnlocked, isOpen, toggle, currentPath }) => {
             <button
               onClick={toggle}
               className="p-2 rounded-md hover:bg-gray-800 transition-colors"
-              title="Collapse Sidebar"
+              title={t("sidebar.collapseSidebar", "Collapse Sidebar")}
             >
               <ChevronLeft size={20} />
             </button>

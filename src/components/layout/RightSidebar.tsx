@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ChevronRight,
-  X,
   ChevronsLeft,
   Bell,
   Clock,
@@ -10,7 +9,8 @@ import {
   Trash2,
   FileDown,
   Info,
-  AlertCircle
+  AlertCircle,
+  X
 } from "lucide-react";
 
 // Define a type for the snapshot
@@ -24,7 +24,7 @@ interface Snapshot {
 interface Notification {
   id: number;
   time: string;
-  type: "download" | "update" | "info" | "warning" | "error";
+  type: "download" | "update" | "info" | "warning" | "error" | "timer";
   message: string;
 }
 
@@ -35,14 +35,16 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
   const [shouldForceOpen, setShouldForceOpen] = useState(false);
 
   // Group notifications by type
-  const groupedNotifications = notifications.reduce((acc, notification) => {
-    const { type } = notification;
-    if (!acc[type]) {
-      acc[type] = [];
-    }
-    acc[type].push(notification);
-    return acc;
-  }, {} as Record<string, Notification[]>);
+  const groupedNotifications = useMemo(() => {
+    return notifications.reduce((acc, notification) => {
+      const { type } = notification;
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push(notification);
+      return acc;
+    }, {} as Record<string, Notification[]>);
+  }, [notifications]);
 
   // Load snapshots and notifications from localStorage on mount
   useEffect(() => {
@@ -200,6 +202,8 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
         return <AlertCircle size={16} className="text-amber-400" />;
       case "error":
         return <AlertCircle size={16} className="text-red-400" />;
+      case "timer":
+        return <Clock size={16} className="text-purple-400" />;
       case "info":
       default:
         return <Info size={16} className="text-gray-400" />;
@@ -210,16 +214,18 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
   const getNotificationTypeLabel = (type: string) => {
     switch (type) {
       case "download":
-        return "Downloads";
+        return t("notifications.downloads", "Downloads");
       case "update":
-        return "Updates";
+        return t("notifications.updates", "Updates");
       case "warning":
-        return "Warnings";
+        return t("notifications.warnings", "Warnings");
       case "error":
-        return "Errors";
+        return t("notifications.errors", "Errors");
+      case "timer":
+        return t("notifications.timers", "Timers");
       case "info":
       default:
-        return "Information";
+        return t("notifications.information", "Information");
     }
   };
 
@@ -237,6 +243,7 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
     const hasDownloads = notifications.some(n => n.type === "download");
     const hasUpdates = notifications.some(n => n.type === "update");
     const hasWarnings = notifications.some(n => n.type === "warning" || n.type === "error");
+    const hasTimers = notifications.some(n => n.type === "timer");
     const hasSnapshots = snapshots.length > 0;
     
     return (
@@ -253,7 +260,10 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
         {hasWarnings && (
           <AlertCircle size={20} className="text-amber-400" />
         )}
-        {!hasSnapshots && !hasDownloads && !hasUpdates && !hasWarnings && (
+        {hasTimers && (
+          <Clock size={20} className="text-purple-400" />
+        )}
+        {!hasSnapshots && !hasDownloads && !hasUpdates && !hasWarnings && !hasTimers && (
           <Bell size={20} className="text-gray-300" />
         )}
       </div>
@@ -281,7 +291,7 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
                 : "hover:bg-gray-800"
             }`}
             disabled={!isUnlocked}
-            title={isUnlocked ? "Expand Sidebar" : "Sidebar Locked"}
+            title={isUnlocked ? t("sidebar.expandSidebar", "Expand Sidebar") : t("sidebar.sidebarLocked", "Sidebar Locked")}
           >
             <ChevronsLeft size={20} />
           </button>
@@ -295,12 +305,12 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
       {isOpen && (
         <div className="h-full">
           <div className="flex justify-between items-center p-4 border-b border-gray-800">
-            <h3 className="text-lg font-medium">Notifications</h3>
+            <h3 className="text-lg font-medium">{t("notifications.title", "Notifications")}</h3>
             <div className="flex space-x-2">
               <button
                 onClick={toggle}
                 className="p-1 rounded-md hover:bg-gray-800 transition-colors"
-                title="Toggle Panel"
+                title={t("sidebar.collapseSidebar", "Collapse Sidebar")}
               >
                 <ChevronRight size={18} />
               </button>
@@ -323,7 +333,7 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
                       <button
                         onClick={() => clearNotificationsByType(type)}
                         className="p-1 rounded-md hover:bg-gray-800 transition-colors text-gray-400 hover:text-rose-400"
-                        title="Clear All"
+                        title={t("notifications.clearAll", "Clear All")}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -342,7 +352,7 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
                           <button
                             onClick={() => deleteNotification(notification.id)}
                             className="p-1 rounded-md hover:bg-gray-700 transition-colors text-gray-400 hover:text-rose-400"
-                            title="Delete"
+                            title={t("notifications.delete", "Delete")}
                           >
                             <X size={14} />
                           </button>
@@ -365,7 +375,7 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
                   <button
                     onClick={clearAllSnapshots}
                     className="p-1 rounded-md hover:bg-gray-800 transition-colors text-gray-400 hover:text-rose-400"
-                    title="Clear All Snapshots"
+                    title={t("notifications.clearAllSnapshots", "Clear All Snapshots")}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -394,9 +404,9 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <div className="p-6">
                   <Bell size={40} className="mx-auto mb-4 text-gray-600" />
-                  <p className="text-gray-400 mb-4">No notifications yet.</p>
+                  <p className="text-gray-400 mb-4">{t("notifications.empty", "No notifications yet.")}</p>
                   <p className="text-gray-500 text-sm">
-                    Snapshots and notifications will appear here.
+                    {t("notifications.emptyDesc", "Snapshots and notifications will appear here.")}
                   </p>
                 </div>
               </div>
