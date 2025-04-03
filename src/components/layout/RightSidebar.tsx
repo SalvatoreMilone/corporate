@@ -297,31 +297,12 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
           <div className="flex justify-between items-center p-4 border-b border-gray-800">
             <h3 className="text-lg font-medium">Notifications</h3>
             <div className="flex space-x-2">
-              {(notifications.length > 0 || snapshots.length > 0) && (
-                <button
-                  onClick={() => {
-                    clearAllNotifications();
-                    clearAllSnapshots();
-                  }}
-                  className="p-1 rounded-md hover:bg-gray-800 transition-colors text-gray-400 hover:text-rose-400"
-                  title="Clear All"
-                >
-                  <Trash2 size={16} />
-                </button>
-              )}
               <button
                 onClick={toggle}
                 className="p-1 rounded-md hover:bg-gray-800 transition-colors"
                 title="Toggle Panel"
               >
                 <ChevronRight size={18} />
-              </button>
-              <button
-                onClick={onClose}
-                className="p-1 rounded-md hover:bg-gray-800 transition-colors"
-                title="Close Panel"
-              >
-                <X size={18} />
               </button>
             </div>
           </div>

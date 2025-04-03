@@ -7,8 +7,8 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
-  Globe,
   Bell,
+  Globe,
   ChevronDown
 } from "lucide-react";
 import { AnimatedLogoWithText } from "../ui/AnimatedLogo";
@@ -37,22 +37,19 @@ const Navbar = ({
 
   // Change the language
   const changeLanguage = (langCode) => {
-    i18n.changeLanguage(langCode)
-      .then(() => {
-        // Force reload resources after language change
-        i18n.reloadResources()
-          .then(() => {
-            // Update localStorage to persist the language choice
-            localStorage.setItem('i18nextLng', langCode);
-            
-            // Close the language menu
-            setLangMenuOpen(false);
-            
-            console.log(`Language changed to: ${langCode}`);
-          })
-          .catch(err => console.error('Failed to reload resources:', err));
-      })
-      .catch(err => console.error('Failed to change language:', err));
+    console.log(`Changing language to: ${langCode}`);
+    
+    // Set the language directly in localStorage
+    localStorage.setItem('i18nextLng', langCode);
+    
+    // Change the language in i18n
+    i18n.changeLanguage(langCode);
+    
+    // Force a UI refresh
+    document.dispatchEvent(new Event('languageChanged'));
+    
+    // Close language menu
+    setLangMenuOpen(false);
   };
 
   // Find the current language

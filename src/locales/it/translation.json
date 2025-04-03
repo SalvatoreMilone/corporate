@@ -1,44 +1,44 @@
 {
   "navbar": {
-    "home": "Home",
-    "about": "About",
-    "i18nDemo": "i18n Demo"
+    "home": "Inizio",
+    "about": "Chi Siamo",
+    "i18nDemo": "Demo i18n"
   },
   "home": {
-    "title": "Eureka, it works!",
-    "hope": "i hope",
-    "inputPlaceholder": "Type here (5 char limit)",
-    "charactersTyped": "Characters typed",
-    "currentTime": "Current time",
-    "checkpoint": "Checkpoint",
-    "unlockSidebar": "Unlock Sidebar",
-    "lockSidebar": "Lock Sidebar",
-    "snapshots": "Snapshots",
-    "snapshotTitle": "Snapshot at {{time}}",
-    "charactersCount": "Characters: {{count}}"
+    "title": "Eureka, funziona!",
+    "hope": "spero",
+    "inputPlaceholder": "Scrivi qui (limite 5 caratteri)",
+    "charactersTyped": "Caratteri digitati",
+    "currentTime": "Ora attuale",
+    "checkpoint": "Salva snapshot",
+    "unlockSidebar": "Sblocca Sidebar",
+    "lockSidebar": "Blocca Sidebar",
+    "snapshots": "Istantanee",
+    "snapshotTitle": "Istantanea alle {{time}}",
+    "charactersCount": "Caratteri: {{count}}"
   },
   "i18nDemo": {
-    "title": "Internationalization Demo",
-    "subtitle": "A demonstration of i18n capabilities",
-    "selectTitle": "Select a language",
-    "examplesTitle": "Translation Examples",
-    "greetingLabel": "Greeting",
-    "greeting": "Hello! Welcome to the i18n demo.",
-    "dateTimeLabel": "Date and Time Formatting",
-    "dateTime": "Current date: {{date, datetime}}",
-    "numbersLabel": "Number Formatting",
-    "price": "The price is {{price, number}}",
-    "pluralsLabel": "Pluralization",
-    "items_zero": "You have no items",
-    "items_one": "You have {{count}} item",
-    "items_other": "You have {{count}} items",
-    "howItWorksTitle": "How It Works",
-    "howItWorksDesc": "This demo uses react-i18next for internationalization. Translation files are stored in the locales directory.",
-    "usageDesc": "To use i18n in your components, import the useTranslation hook and use the t function to translate your text."
+    "title": "Demo Internazionalizzazione",
+    "subtitle": "Una dimostrazione delle capacità i18n",
+    "selectTitle": "Seleziona una lingua",
+    "examplesTitle": "Esempi di Traduzione",
+    "greetingLabel": "Saluto",
+    "greeting": "Ciao! Benvenuto alla demo i18n.",
+    "dateTimeLabel": "Formattazione di Data e Ora",
+    "dateTime": "Data attuale: {{date, datetime}}",
+    "numbersLabel": "Formattazione Numeri",
+    "price": "Il prezzo è {{price, number}}",
+    "pluralsLabel": "Pluralizzazione",
+    "items_zero": "Non hai nessun elemento",
+    "items_one": "Hai {{count}} elemento",
+    "items_other": "Hai {{count}} elementi",
+    "howItWorksTitle": "Come Funziona",
+    "howItWorksDesc": "Questa demo utilizza react-i18next per l'internazionalizzazione. I file di traduzione sono archiviati nella directory locales.",
+    "usageDesc": "Per utilizzare i18n nei tuoi componenti, importa l'hook useTranslation e usa la funzione t per tradurre il tuo testo."
   },
   "notFound": {
-    "title": "404 - Page Not Found",
-    "message": "Sorry, the page you are looking for doesn't exist or has been moved.",
-    "backHome": "Back to Home"
+    "title": "404 - Pagina Non Trovata",
+    "message": "Ci dispiace, la pagina che stai cercando non esiste o è stata spostata.",
+    "backHome": "Torna alla Home"
   }
 }

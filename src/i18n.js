@@ -16,17 +16,6 @@ const resources = {
   }
 };
 
-// Get stored language from localStorage
-const getStoredLanguage = () => {
-  try {
-    const storedLang = localStorage.getItem('i18nextLng');
-    return storedLang || 'en'; // Default to English if no stored language
-  } catch (error) {
-    console.error('Error getting language from localStorage:', error);
-    return 'en';
-  }
-};
-
 i18n
   // Detect language
   .use(LanguageDetector)
@@ -35,7 +24,7 @@ i18n
   // Initialize i18next
   .init({
     resources,
-    lng: getStoredLanguage(),
+    lng: localStorage.getItem('i18nextLng') || 'en',
     fallbackLng: 'en',
     debug: process.env.NODE_ENV === 'development',
     
@@ -51,24 +40,17 @@ i18n
     
     react: {
       useSuspense: false, // Disable suspense for easier integration
-      wait: true
     }
   });
 
-// Function to reload language resources
-const reloadResources = async () => {
-  try {
-    await i18n.reloadResources();
-    console.log('i18n resources reloaded successfully');
-  } catch (error) {
-    console.error('Failed to reload i18n resources:', error);
-  }
+// Fix event handling for language changes
+const originalChangeLanguage = i18n.changeLanguage;
+i18n.changeLanguage = (lng) => {
+  console.log(`Changing language to: ${lng}`);
+  localStorage.setItem('i18nextLng', lng);
+  // Force reload translations to ensure UI updates
+  document.dispatchEvent(new Event('languageChanged'));
+  return originalChangeLanguage.call(i18n, lng);
 };
-
-// Add the reloadResources function to i18n instance
-i18n.reloadResources = reloadResources;
-
-// Force initial load of resources
-i18n.reloadResources();
 
 export default i18n;
