@@ -3,7 +3,8 @@
     "home": "Home",
     "about": "About",
     "i18nDemo": "i18n Demo",
-    "workTimer": "Work Timer"
+    "workTimer": "Work Timer",
+    "clock": "Clock 3.0"
   },
   "sidebar": {
     "expandSidebar": "Expand Sidebar",
@@ -31,7 +32,12 @@
     "profile": "Profile",
     "appearance": "Appearance",
     "preferences": "Preferences",
-    "help": "Help"
+    "help": "Help",
+    "clockTitle": "Clock 3.0",
+    "schedule": "Work Schedule",
+    "pomodoro": "Pomodoro Timer",
+    "timers": "Custom Timers",
+    "breaks": "Breaks"
   },
   "notifications": {
     "title": "Notifications",
@@ -45,7 +51,9 @@
     "clearAllSnapshots": "Clear All Snapshots",
     "delete": "Delete",
     "empty": "No notifications yet.",
-    "emptyDesc": "Snapshots and notifications will appear here."
+    "emptyDesc": "Snapshots and notifications will appear here.",
+    "toggle": "Toggle Notifications",
+    "none": "No Notifications"
   },
   "home": {
     "title": "Welcome to React Template",
@@ -92,6 +100,43 @@
     "deleteTimer": "Delete Timer",
     "completed": "Completed",
     "minutes": "minutes"
+  },
+  "clock": {
+    "title": "Clock 3.0",
+    "toggleFormat": "Toggle 24h/AM-PM",
+    "workSchedule": "Work Schedule",
+    "pomodoroTimer": "Pomodoro Timer",
+    "customTimers": "Custom Timers",
+    "lunchBreak": "Lunch Break",
+    "workEnd": "Work End",
+    "ago": "ago",
+    "remaining": "remaining",
+    "minutes": "minutes",
+    "workDuration": "Work Duration (minutes)",
+    "shortBreak": "Short Break (minutes)",
+    "longBreak": "Long Break (minutes)",
+    "sessionsBeforeLongBreak": "Sessions Before Long Break",
+    "autoStartBreaks": "Auto-start breaks",
+    "autoStartWork": "Auto-start work",
+    "soundAlert": "Sound alert",
+    "timerName": "Timer Name",
+    "timerType": "Timer Type",
+    "specificTime": "Specific Time",
+    "duration": "Duration (minutes)",
+    "playSound": "Play Sound when Completed",
+    "addTimer": "Add Timer",
+    "activeTimers": "Active Timers",
+    "noTimers": "No timers added yet",
+    "pauseTimer": "Pause Timer",
+    "startTimer": "Start Timer",
+    "resetTimer": "Reset Timer",
+    "deleteTimer": "Delete Timer",
+    "completed": "Completed",
+    "workHours": "Work Hours",
+    "startTime": "Start Time",
+    "lunchTime": "Lunch Time",
+    "lunchDuration": "Lunch Duration (minutes)",
+    "soundEnabled": "Enable Sounds"
   },
   "i18nDemo": {
     "title": "Internationalization Demo",

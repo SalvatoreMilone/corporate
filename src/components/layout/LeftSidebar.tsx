@@ -14,7 +14,10 @@ import {
   HelpCircle,
   ExternalLink,
   Hash,
-  Clock
+  Clock,
+  Timer,
+  Bell,
+  Coffee
 } from "lucide-react";
 
 const LeftSidebar = ({ isUnlocked, isOpen, toggle, currentPath }) => {
@@ -37,6 +40,15 @@ const LeftSidebar = ({ isUnlocked, isOpen, toggle, currentPath }) => {
         { id: "languages", label: t("sidebar.languages", "Available Languages"), icon: <Layers size={18} /> },
         { id: "translations", label: t("sidebar.translations", "Translation Examples"), icon: <FileText size={18} /> },
         { id: "documentation", label: t("sidebar.documentation", "Documentation"), icon: <Book size={18} />, isLink: true, to: "/i18n/documentation" }
+      ]
+    },
+    "/clock": {
+      title: "Clock 3.0",
+      items: [
+        { id: "schedule", label: "Work Schedule", icon: <Clock size={18} /> },
+        { id: "pomodoro", label: "Pomodoro Timer", icon: <Timer size={18} /> },
+        { id: "timers", label: "Custom Timers", icon: <Bell size={18} /> },
+        { id: "breaks", label: "Breaks", icon: <Coffee size={18} /> }
       ]
     },
     "/work-timer": {

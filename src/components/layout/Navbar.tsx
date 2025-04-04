@@ -104,15 +104,15 @@ const Navbar = ({
           </Link>
           
           <Link
-            to="/work-timer"
+            to="/clock"
             className={`flex items-center space-x-2 transition-colors ${
-              isActive("/work-timer")
+              isActive("/clock")
                 ? "text-rose-400 font-medium"
                 : "text-gray-300 hover:text-white"
             }`}
           >
             <Clock size={16} />
-            <span>{t("navbar.workTimer")}</span>
+            <span>Clock 3.0</span>
           </Link>
 
           <Link
