@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ChevronRight,
@@ -10,8 +10,12 @@ import {
   FileDown,
   Info,
   AlertCircle,
-  X
+  X,
+  PlayCircle,
+  PauseCircle,
+  RotateCcw
 } from "lucide-react";
+import React from "react";
 
 // Define a type for the snapshot
 interface Snapshot {
@@ -144,6 +148,44 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldForceOpen, isOpen, isUnlocked]);
 
+  useEffect(() => {
+    // Funzione per gestire l'aggiornamento delle notifiche
+    const handleNotificationUpdate = (event) => {
+      if (event.detail) {
+        const updatedNotification = event.detail;
+        
+        setNotifications(prev => {
+          // Trova l'indice della notifica da aggiornare
+          const index = prev.findIndex(n => n.id === updatedNotification.id);
+          
+          if (index !== -1) {
+            // Aggiorna la notifica esistente
+            const updatedNotifications = [...prev];
+            updatedNotifications[index] = updatedNotification;
+            
+            // Aggiorna il localStorage
+            localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+            
+            return updatedNotifications;
+          } else {
+            // Se non esiste, aggiungila all'inizio
+            const newNotifications = [updatedNotification, ...prev];
+            localStorage.setItem("notifications", JSON.stringify(newNotifications));
+            return newNotifications;
+          }
+        });
+      }
+    };
+    
+    // Registra l'event listener
+    window.addEventListener('notificationUpdated', handleNotificationUpdate);
+    
+    // Pulizia quando il componente viene smontato
+    return () => {
+      window.removeEventListener('notificationUpdated', handleNotificationUpdate);
+    };
+  }, []);
+
   // Delete a single notification
   const deleteNotification = (id: number) => {
     setNotifications((prev) => {
@@ -227,6 +269,51 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
       default:
         return t("notifications.information", "Information");
     }
+  };
+
+  // Handle timer actions from the sidebar
+  const handleTimerAction = (action, timerName) => {
+    // Invia un evento personalizzato per controllare il timer
+    const timerEvent = new CustomEvent('timerControl', {
+      detail: {
+        action,
+        timerName
+      }
+    });
+    
+    window.dispatchEvent(timerEvent);
+  };
+
+  // Render timer controls for timer notifications
+  const renderTimerControls = (notification) => {
+    // Controlla se la notifica è di tipo timer
+    if (notification.type !== 'timer') return null;
+    
+    return (
+      <div className="flex space-x-2 mt-2">
+        <button
+          onClick={() => handleTimerAction('pause', notification.message)}
+          className="p-1 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-600 transition-colors"
+          title={t("notifications.pauseTimer", "Pause Timer")}
+        >
+          <PauseCircle size={16} />
+        </button>
+        <button
+          onClick={() => handleTimerAction('play', notification.message)}
+          className="p-1 rounded-md bg-green-100 hover:bg-green-200 text-green-600 transition-colors"
+          title={t("notifications.startTimer", "Start Timer")}
+        >
+          <PlayCircle size={16} />
+        </button>
+        <button
+          onClick={() => handleTimerAction('reset', notification.message)}
+          className="p-1 rounded-md bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors"
+          title={t("notifications.resetTimer", "Reset Timer")}
+        >
+          <RotateCcw size={16} />
+        </button>
+      </div>
+    );
   };
 
   // Determine which icons to show when sidebar is collapsed
@@ -358,6 +445,9 @@ const RightSidebar = ({ isUnlocked, isOpen, toggle, onClose }) => {
                           </button>
                         </div>
                         <p className="text-sm text-gray-400">{notification.time}</p>
+                        
+                        {/* Timer Controls */}
+                        {renderTimerControls(notification)}
                       </div>
                     ))}
                   </div>

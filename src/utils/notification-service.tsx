@@ -85,7 +85,7 @@ export const createErrorNotification = (message) => {
 };
 
 // Create a generic notification (type defaults to "info")
-export const createNotification = (message, type = "info") => {
+export const createNotification = (message, type = "info", id = null) => {
   if (!message) {
     console.error("Notification message is required");
     return null;
@@ -98,14 +98,55 @@ export const createNotification = (message, type = "info") => {
     type = "info";
   }
 
+  const notificationId = id || Date.now();
+  
   const notification = {
-    id: Date.now(),
+    id: notificationId,
     time: getFormattedTime(),
     type,
     message,
   };
 
   return saveAndDispatchNotification(notification);
+};
+
+// Update an existing notification
+export const updateNotification = (id, newMessage) => {
+  if (!id || !newMessage) {
+    console.error("Notification ID and message are required for updates");
+    return null;
+  }
+  
+  // Get existing notifications
+  const storedNotifications = localStorage.getItem("notifications");
+  if (!storedNotifications) return null;
+  
+  const notifications = JSON.parse(storedNotifications);
+  
+  // Find the notification to update
+  const notificationIndex = notifications.findIndex(n => n.id === id);
+  if (notificationIndex === -1) {
+    // If not found, create a new one
+    return createNotification(newMessage, "timer", id);
+  }
+  
+  // Update the notification
+  notifications[notificationIndex] = {
+    ...notifications[notificationIndex],
+    message: newMessage,
+    time: getFormattedTime() // Update the time too
+  };
+  
+  // Save to localStorage
+  localStorage.setItem("notifications", JSON.stringify(notifications));
+  
+  // Dispatch event for live update
+  const event = new CustomEvent("notificationUpdated", { 
+    detail: notifications[notificationIndex] 
+  });
+  window.dispatchEvent(event);
+  
+  return notifications[notificationIndex];
 };
 
 // Helper function to save to localStorage and dispatch events
@@ -116,22 +157,29 @@ const saveAndDispatchNotification = (notification) => {
     ? JSON.parse(storedNotifications)
     : [];
   
-  // Prevent duplicate notifications
-  if (notifications.some(n => n.message === notification.message && Date.now() - n.id < 5000)) {
-    return null;
-  }
+  // Check if a notification with this ID already exists
+  const existingIndex = notifications.findIndex(n => n.id === notification.id);
   
-  const updatedNotifications = [notification, ...notifications];
+  if (existingIndex !== -1) {
+    // Update existing notification
+    notifications[existingIndex] = notification;
+  } else {
+    // Add new notification at the beginning
+    notifications.unshift(notification);
+  }
   
   // Keep only the last 50 notifications to prevent localStorage bloat
-  if (updatedNotifications.length > 50) {
-    updatedNotifications.length = 50;
+  if (notifications.length > 50) {
+    notifications.length = 50;
   }
   
-  localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+  localStorage.setItem("notifications", JSON.stringify(notifications));
 
   // Dispatch event
-  const event = new CustomEvent("newNotification", { detail: notification });
+  const event = existingIndex !== -1 
+    ? new CustomEvent("notificationUpdated", { detail: notification })
+    : new CustomEvent("newNotification", { detail: notification });
+  
   window.dispatchEvent(event);
 
   // Trigger sidebar to open
